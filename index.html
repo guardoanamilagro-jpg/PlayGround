@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#101813" />
+  <title>Esconderte o mueres — Wild Hunt</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div id="game-wrap">
+    <canvas id="game-canvas" aria-label="3D hide and seek game"></canvas>
+    <div id="vignette"></div>
+    <div id="crosshair"><i></i><b></b></div>
+
+    <header id="top-hud" class="hud hidden">
+      <div class="brand-mark"><span class="brand-icon">✳</span><span>WILD<br><b>HUNT</b></span></div>
+      <div class="match-center">
+        <div class="round-line"><span id="round-label">ROUND 1</span><span class="round-dash"></span><span id="map-label">TROPICAL JUNGLE</span></div>
+        <div id="timer">00:30</div>
+        <div id="phase-label">HIDING PHASE</div>
+      </div>
+      <div class="scoreboard">
+        <div class="score-team hider-score"><span class="team-dot"></span><span>HIDERS</span><b id="hider-score">0</b></div>
+        <span class="score-divider">—</span>
+        <div class="score-team seeker-score"><span class="team-dot"></span><span>SEEKERS</span><b id="seeker-score">0</b></div>
+      </div>
+    </header>
+
+    <aside id="objective-card" class="hud hidden">
+      <span class="eyebrow" id="role-eyebrow">YOUR OBJECTIVE</span>
+      <strong id="objective-title">Stay unseen.</strong>
+      <span id="objective-copy">Survive until the hunt ends.</span>
+      <div class="alive-line"><span class="alive-pulse"></span><span id="alive-count">9</span> prey still alive</div>
+    </aside>
+
+    <div id="ability-card" class="hud hidden">
+      <div class="ability-key" id="ability-key">C</div>
+      <div class="ability-text"><strong id="ability-title">CHAMELEON SKIN</strong><span id="ability-subtitle">CAMOUFLAGE READY</span></div>
+      <div id="ability-meter"><span></span></div>
+    </div>
+
+    <div id="status-toast" class="hidden"></div>
+    <div id="blackout" class="hidden"><div class="blackout-mark">◌</div><p>THE HUNT IS BLIND</p><span>Seekers are released in <b id="blackout-count">30</b></span></div>
+
+    <section id="start-screen" class="screen">
+      <div class="menu-grain"></div>
+      <nav class="menu-nav"><div class="brand-mark large"><span class="brand-icon">✳</span><span>WILD<br><b>HUNT</b></span></div><div class="nav-tag"><span></span> ASYMMETRIC SURVIVAL</div></nav>
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="eyebrow-line"></span> ONE WILD WORLD. ELEVEN HUNTERS.</div>
+        <h1>Esconderte<br><em>o mueres.</em></h1>
+        <p>Hide in the wild. Hunt before time runs out.<br>Three wins. No second chances.</p>
+        <div class="menu-actions"><button id="play-button" class="primary-button">ENTER THE WILD <span>↗</span></button><button id="how-button" class="text-button">HOW TO PLAY <span>↓</span></button></div>
+        <div class="feature-row"><div><b>09</b><span>HIDERS</span></div><i></i><div><b>02</b><span>SEEKERS</span></div><i></i><div><b>04:00</b><span>TO SURVIVE</span></div></div>
+      </div>
+      <div class="menu-controls">
+        <div class="field-group"><label>CHOOSE YOUR SIDE</label><div class="choice-row" id="role-picker"><button class="choice active" data-role="hider"><span class="choice-icon">◉</span><span>HIDER</span></button><button class="choice" data-role="seeker"><span class="choice-icon">⌖</span><span>SEEKER</span></button></div></div>
+        <div class="field-group"><label>YOUR ANIMAL</label><select id="animal-select"><option value="chameleon">Chameleon · camouflage</option><option value="monkey">Monkey · tree climber</option><option value="rabbit">Rabbit · quick prey</option><option value="fox">Fox · swift prey</option><option value="raccoon">Raccoon · woodland prey</option><option value="deer">Deer · fast prey</option><option value="boar">Boar · sturdy prey</option><option value="tortoise">Tortoise · camouflage</option><option value="owl">Owl · silent prey</option></select></div>
+        <div class="field-group"><label>HUNTING GROUNDS</label><div class="map-picker" id="map-picker"><button class="map-option active" data-map="jungle"><span class="map-icon jungle-icon">♣</span><span><b>TROPICAL JUNGLE</b><small>Canopy · dense cover</small></span><i>01</i></button><button class="map-option" data-map="savanna"><span class="map-icon savanna-icon">☀</span><span><b>AFRICAN SAVANNA</b><small>Open plains · tall grass</small></span><i>02</i></button><button class="map-option" data-map="temple"><span class="map-icon temple-icon">◈</span><span><b>ANCIENT TEMPLE</b><small>Ruins · shadowed halls</small></span><i>03</i></button></div></div>
+      </div>
+      <div class="menu-footer"><span>WASD MOVE <i>·</i> MOUSE LOOK <i>·</i> SPACE JUMP <i>·</i> E TAG</span><span>01 — 03 <b>WILD HUNT</b></span></div>
+      <div class="hero-index">01<span>/</span>03</div>
+    </section>
+
+    <section id="instructions-screen" class="modal-screen hidden">
+      <div class="modal-card"><button class="close-modal" id="close-how">×</button><span class="eyebrow">FIELD GUIDE</span><h2>Survive the<br><em>four-minute hunt.</em></h2><div class="guide-grid"><div><b>01 / HIDE</b><p>You have 30 seconds to disappear. Seekers are blinded until the hunt begins.</p></div><div><b>02 / MOVE</b><p>WASD to move, mouse to look, Space to jump. Sprint with Shift when prey.</p></div><div><b>03 / HUNT</b><p>Seekers tag with E at close range. Lion's Q roar reveals moving prey nearby.</p></div><div><b>04 / SURVIVE</b><p>Hiders win if anyone survives. First side to 3 round wins claims the wild.</p></div></div><button id="guide-play" class="primary-button">GOT IT <span>↗</span></button></div>
+    </section>
+
+    <section id="result-screen" class="modal-screen hidden">
+      <div class="modal-card result-card"><span class="eyebrow" id="result-eyebrow">ROUND COMPLETE</span><h2 id="result-title">The wild<br><em>belongs to you.</em></h2><p id="result-copy">Your team held on until the last second.</p><div class="result-score"><span>HIDERS <b id="result-hider-score">0</b></span><i>—</i><span>SEEKERS <b id="result-seeker-score">0</b></span></div><button id="next-round" class="primary-button">NEXT ROUND <span>↗</span></button></div>
+    </section>
+
+    <div id="pause-screen" class="modal-screen hidden"><div class="modal-card pause-card"><span class="eyebrow">TAKE A BREATH</span><h2>Wild is<br><em>waiting.</em></h2><p>Press Esc to return to the hunt.</p><button id="resume-button" class="primary-button">BACK TO GAME <span>↗</span></button><button id="quit-button" class="text-button">LEAVE MATCH</button></div></div>
+
+    <div id="pointer-hint" class="hidden"><span>CLICK TO PLAY</span><small>ESC TO PAUSE</small></div>
+    <div id="feed" class="hud hidden"></div>
+    <div id="sound-toggle" title="Toggle sound" class="hidden">♫</div>
+  </div>
+  <script type="module" src="./game.js"></script>
+</body>
+</html>
