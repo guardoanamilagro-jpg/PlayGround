@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#07110e" />
+  <title>Esconderte o mueres — 3D Hide &amp; Seek</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2307110e'/%3E%3Cpath d='M14 20h22v7H21v5h14v7H21v5h16v7H14z' fill='%23c8f169'/%3E%3Cpath d='M42 20h8v31h-8z' fill='%23ff5a3c'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="./styles.css" />
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three.module.js" } }
+  </script>
+</head>
+<body>
+  <div id="stage" aria-hidden="true"></div>
+  <div id="grain" aria-hidden="true"></div>
+  <div id="vignette" aria-hidden="true"></div>
+  <div id="flash" aria-hidden="true"></div>
+
+  <!-- ══════════════════ MENU ══════════════════ -->
+  <div id="menu" class="screen">
+    <header class="menu-top">
+      <div class="brand-mini">
+        <span class="brand-mark">E<span>/</span>M</span>
+        <span class="brand-sub">JUEGO DE PERSECUCIÓN 3D</span>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn" id="sound-btn" title="Sonido" aria-label="Sonido">
+          <svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path class="wave" d="M16 8.5c1.2 1 1.9 2.1 1.9 3.5s-.7 2.5-1.9 3.5"/><path class="wave" d="M18.6 6c2 1.6 3.2 3.6 3.2 6s-1.2 4.4-3.2 6"/></svg>
+        </button>
+        <button class="icon-btn" id="fullscreen-btn" title="Pantalla completa" aria-label="Pantalla completa">
+          <svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 15v5h-5M15 4h5v5M9 20H4v-5"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="menu-layout">
+      <section class="panel">
+        <div class="kicker"><i></i> ASIMÉTRICO · 9 PRESAS vs 2 DEPREDADORES</div>
+        <h1 class="logo">ESCONDERTE<br /><span>O MUERES</span></h1>
+        <p class="lead">Nueve animales se ocultan. Dos depredadores los cazan. Cuatro minutos. Solo un bando sale vivo.</p>
+
+        <div class="choice-block">
+          <div class="block-head">
+            <span class="step">01</span><span class="block-title">ELIGE TU BANDO</span>
+          </div>
+          <div class="role-switch" id="role-switch" role="tablist">
+            <button class="role-option active" data-role="hider" role="tab">
+              <span class="role-ico hider"></span>
+              <span><b>ESCONDIDO</b><small>9 animales · sobrevive</small></span>
+            </button>
+            <button class="role-option" data-role="seeker" role="tab">
+              <span class="role-ico seeker"></span>
+              <span><b>CAZADOR</b><small>2 animales · elimina</small></span>
+            </button>
+          </div>
+        </div>
+
+        <div class="choice-block">
+          <div class="block-head">
+            <span class="step">02</span><span class="block-title" id="animal-label">TU ANIMAL</span>
+            <span class="block-hint" id="animal-hint">HABILIDAD ÚNICA</span>
+          </div>
+          <div class="animal-grid" id="animal-grid"></div>
+        </div>
+
+        <div class="choice-block map-choice">
+          <div class="block-head">
+            <span class="step">03</span><span class="block-title">ELIGE EL MAPA</span>
+            <span class="block-hint" id="map-hint">ROTAN CADA RONDA</span>
+          </div>
+          <div class="map-grid" id="map-grid"></div>
+        </div>
+
+        <div class="menu-actions">
+          <button id="play-btn" class="primary">
+            <span>ENTRAR AL JUEGO</span>
+            <svg viewBox="0 0 24 24"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+          </button>
+          <button id="how-btn" class="ghost" title="Cómo jugar">?</button>
+        </div>
+        <p class="menu-note">Al mejor de 5 · el primero en ganar 3 rondas se lleva la partida · 3 mapas</p>
+      </section>
+
+      <aside class="menu-aside">
+        <div class="aside-card" id="aside-map">
+          <span class="aside-tag">ESCENARIO</span>
+          <h2 id="aside-map-name">SELVA TROPICAL</h2>
+          <p id="aside-map-desc">Vegetación densa, copas altas y sombras profundas. El territorio del mono.</p>
+          <div class="aside-meta"><span id="aside-map-temp">HÚMEDO</span><span>·</span><span id="aside-map-size">160 × 160 M</span></div>
+        </div>
+        <div class="aside-card aside-live" id="aside-species">
+          <span class="aside-tag">TU ANIMAL</span>
+          <div class="aside-species-row">
+            <div class="aside-portrait" id="aside-portrait"></div>
+            <div>
+              <h2 id="aside-species-name">MONO</h2>
+              <p class="aside-role" id="aside-species-role">ESCONDIDO · 1 DE 9</p>
+            </div>
+          </div>
+          <p id="aside-species-ability"><b>Trepar y camuflarse.</b> Sube a los árboles y permanece inmóvil para fundirte con la copa.</p>
+          <div class="stat-row"><span>VELOCIDAD</span><i><b id="stat-speed"></b></i></div>
+          <div class="stat-row"><span>SIGILO</span><i><b id="stat-stealth"></b></i></div>
+        </div>
+        <div class="aside-keys">
+          <span><kbd>WASD</kbd> MOVER</span><span><kbd>SHIFT</kbd> CORRER</span><span><kbd>F</kbd> HABILIDAD</span><span><kbd>ESC</kbd> PAUSA</span>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- ══════════════════ HUD ══════════════════ -->
+  <div id="hud" class="screen hidden">
+    <div class="hud-top">
+      <div class="team-score hiders">
+        <span class="team-dot"></span>
+        <div><span class="team-name">ESCONDIDOS</span><span class="team-sub" id="hider-pips"></span></div>
+      </div>
+      <div class="clock-wrap">
+        <div class="phase-label" id="phase-label">FASE DE ESCONDITE</div>
+        <div class="clock" id="timer">0:30</div>
+        <div class="round-label" id="round-label">RONDA 1 · AL MEJOR DE 5</div>
+      </div>
+      <div class="team-score seekers">
+        <div class="score-right"><span class="team-name">CAZADORES</span><span class="team-sub" id="seeker-pips"></span></div>
+        <span class="team-dot"></span>
+      </div>
+    </div>
+
+    <div class="alive-chip" id="alive-chip"><b id="alive-num">9</b><span>PRESAS VIVAS</span></div>
+
+    <div class="minimap-wrap" id="minimap-wrap">
+      <canvas id="minimap" width="360" height="360"></canvas>
+      <div class="minimap-label"><span id="map-name">SELVA TROPICAL</span><span class="compass">N</span></div>
+    </div>
+
+    <div class="objective" id="objective">ESCÓNDETE ANTES DE QUE EMPIECE LA CAZA</div>
+    <div class="status-pill" id="status-pill">AL DESCUBIERTO</div>
+
+    <div class="ability-card" id="ability-card">
+      <div class="ability-icon" id="ability-icon">F</div>
+      <div class="ability-txt">
+        <span class="ability-key">HABILIDAD <kbd>F</kbd></span>
+        <b id="ability-name">TREPAR</b>
+        <small id="ability-desc">Acércate a un árbol</small>
+      </div>
+      <div class="cool" id="ability-cool"></div>
+    </div>
+
+    <div class="stamina-wrap" id="stamina-wrap">
+      <span>RESISTENCIA</span>
+      <div class="stamina-bar"><i id="stamina-fill"></i></div>
+    </div>
+
+    <div class="hint-bar" id="hint-bar"><kbd>WASD</kbd> mover <kbd>SHIFT</kbd> correr <kbd>C</kbd> agacharse <kbd>F</kbd> habilidad <kbd>E</kbd> subir/bajar</div>
+
+    <div class="toast" id="toast"></div>
+    <div class="feed" id="feed"></div>
+    <div class="spectate hidden" id="spectate"><b>FUERA DE JUEGO</b><span>Observando a tus compañeros…</span></div>
+  </div>
+
+  <!-- ══════════════════ PHASE OVERLAY ══════════════════ -->
+  <div id="phase" class="screen phase hidden">
+    <div class="phase-box">
+      <div class="phase-kicker" id="phase-kicker">LA CAZA COMIENZA EN</div>
+      <div class="phase-big" id="phase-big">0:30</div>
+      <div class="phase-sub" id="phase-sub">Los escondidos ya están en el mapa</div>
+      <div class="radar" id="radar">
+        <span class="radar-ring r1"></span><span class="radar-ring r2"></span><span class="radar-ring r3"></span>
+        <span class="radar-sweep"></span><span class="radar-center"></span>
+        <i class="blip b1"></i><i class="blip b2"></i><i class="blip b3"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ ROUND OVERLAY ══════════════════ -->
+  <div id="round-end" class="screen modal hidden">
+    <div class="modal-card round-card">
+      <div class="round-kicker" id="round-kicker">RONDA 1 FINALIZADA</div>
+      <h2 id="round-title">GANAN LOS ESCONDIDOS</h2>
+      <p id="round-sub">Un escondido ha sobrevivido hasta el final.</p>
+      <div class="score-strip">
+        <div><span>ESCONDIDOS</span><b id="round-hider-score">1</b></div>
+        <div class="vs">—</div>
+        <div><span>CAZADORES</span><b id="round-seeker-score">0</b></div>
+      </div>
+      <div class="round-next" id="round-next">SIGUIENTE RONDA EN <b>6</b></div>
+      <button class="primary small" id="round-continue"><span>CONTINUAR</span><svg viewBox="0 0 24 24"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ══════════════════ MATCH OVERLAY ══════════════════ -->
+  <div id="match-end" class="screen modal hidden">
+    <div class="modal-card match-card">
+      <div class="round-kicker">PARTIDA TERMINADA</div>
+      <h2 id="match-title">VICTORIA</h2>
+      <p id="match-sub">Los escondidos se llevan la partida.</p>
+      <div class="match-scores">
+        <div><span>ESCONDIDOS</span><b id="match-hider-score">3</b></div>
+        <div class="match-sep"></div>
+        <div><span>CAZADORES</span><b id="match-seeker-score">1</b></div>
+      </div>
+      <div class="match-stats" id="match-stats"></div>
+      <div class="menu-actions center">
+        <button class="primary small" id="rematch-btn"><span>REVANCHA</span><svg viewBox="0 0 24 24"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button>
+        <button class="ghost wide" id="menu-btn">MENÚ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ PAUSE ══════════════════ -->
+  <div id="pause" class="screen modal hidden">
+    <div class="modal-card pause-card">
+      <div class="round-kicker">JUEGO EN PAUSA</div>
+      <h2>PAUSA</h2>
+      <p>La caza puede esperar. Pero no demasiado.</p>
+      <button class="primary small" id="resume-btn"><span>CONTINUAR</span><svg viewBox="0 0 24 24"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button>
+      <button class="ghost wide" id="quit-btn">ABANDONAR PARTIDA</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════ HOW TO PLAY ══════════════════ -->
+  <div id="how" class="screen modal hidden">
+    <div class="modal-card how-card">
+      <button class="close-btn" id="how-close">×</button>
+      <div class="round-kicker">CÓMO JUGAR</div>
+      <h2>SOBREVIVE O DEVORA</h2>
+      <div class="how-grid">
+        <div class="how-col">
+          <h3><span class="team-dot hider"></span> ESCONDIDOS · 9</h3>
+          <p>Tenéis 30 segundos para esconderos y 4 minutos para seguir con vida. Si al menos uno de los nueve sobrevive, la ronda es vuestra.</p>
+          <ul>
+            <li><b>Mono</b> — trepa a los árboles con <kbd>E</kbd> y quédate quieto para camuflarte.</li>
+            <li><b>Camaleón</b> — camuflaje activo durante 10 s con <kbd>F</kbd>.</li>
+            <li><b>Zorro, mapache y conejo</b> — rápidos, silenciosos, sin poderes.</li>
+            <li><kbd>C</kbd> agacharse dentro de arbustos: casi invisibles si no te mueves.</li>
+          </ul>
+        </div>
+        <div class="how-col">
+          <h3><span class="team-dot seeker"></span> CAZADORES · 2</h3>
+          <p>Vuestra pantalla se apaga 30 segundos. Después, tenéis 4 minutos para dar caza a las nueve presas. Tocar a una presa la elimina.</p>
+          <ul>
+            <li><b>Guepardo</b> — impulso de velocidad con <kbd>F</kbd>.</li>
+            <li><b>León</b> — rugido que revela presas en movimiento con <kbd>F</kbd>.</li>
+            <li>Las presas agachadas en arbustos solo se ven a corta distancia.</li>
+            <li>Si un mono se sube a un árbol, sacude el tronco manteniéndote cerca.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="how-foot">
+        <span><kbd>WASD</kbd> moverse</span><span><kbd>RATÓN</kbd> mirar</span><span><kbd>SHIFT</kbd> esprintar</span><span><kbd>ESPACIO</kbd> saltar / bajar</span><span><kbd>ESC</kbd> pausa</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="loader">
+    <div class="loader-mark">E<span>/</span>M</div>
+    <div class="loader-bar"><i></i></div>
+    <span>PREPARANDO LA CAZA</span>
+  </div>
+
+  <div id="mobile-controls" class="hidden">
+    <div class="joy" id="joy"><i id="joy-knob"></i></div>
+    <div class="touch-actions">
+      <button data-action="ability">F</button>
+      <button data-action="climb">E</button>
+      <button data-action="sprint">»</button>
+    </div>
+  </div>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>
